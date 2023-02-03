@@ -26,6 +26,8 @@ The process for a client to connect to a running server is as follows:
  - Specify the hostname (I.e www.google.com or "localhost" for your own computer) and port number in string format
  - Initialize the same addrinfo structures just as the server does and call getaddrinfo(hostname, port_str, &hints,&servinfo);
   - Iterate through the list of addresses and create a connection socket for the first available address on the port 
+
+![alt text](https://github.com/lpratt30/pr12/blob/main/yarrr.PNG)
   
 The purpose of a socket is to act as an interface for communication, such as send()ing and recv()ing data. send() and recv() are both calls that allow you to specify the amount of data you would like sent or received across a socket interface, but neither makes any guarantees that much data will send or receive. The only guarantee made is that the data will arrive in order if TCP is specified on the socket. Therefore, anytime these are used they need a while(bytes_done < bytes_needed) loop. 
 
@@ -39,7 +41,7 @@ A final note is that two internet protocols are used, IPv4 and IPv6. IPv4 is the
 
 
 
-![alt text](https://github.com/lpratt30/pr12/blob/main/yarrr.PNG)
+
 
 
 
