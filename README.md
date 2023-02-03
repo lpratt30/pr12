@@ -20,7 +20,7 @@ The process to prepare a server for accepting connections is as follows:
  - Initialize an addrinfo structure that holds information about the addresses you are trying to connect to
  - Call getaddrinfo(hostname, port_str, &hints,&servinfo); to modify servinfo into a linked list of available addreses
   - Iterate through the list of addresses and create a connection socket for the first available address on the port 
-  -  listen() on that socket for incoming connections. Then, while(1) forever to accept client connections and serve
+  -  listen() on that socket for up to n pending incoming connections. Then, while(1) forever to accept client connections and serve
 
 The process for a client to connect to a running server is as follows:
 
