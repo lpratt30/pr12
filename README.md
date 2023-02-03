@@ -33,6 +33,11 @@ Once a socket is created, the client may then connect to it and send() or recv()
 Another socket option used is SO_REUSEADDR. Normally, a connection to the same port will be blocked for some time to ensure there is no more transmission happening. Using this option allows instant reuse of an address- great for testing.  
 
 
+
+![alt text](https://github.com/lpratt30/pr12/blob/main/yarrr.png?raw=true)
+
+https://github.com/lpratt30/pr12/blob/main/yarrr.PNG
+
 ## Part I
 
 Part I of this project is creating a client and server to handle file transfer requests with an API similar to libcurl's "easy" interface. The file transfer request follow an HTTP-like protocol. 
