@@ -1,6 +1,6 @@
 
 # Multi-Threaded Client-Server 
-## Project 1, Grad. Intro to OS   						
+ Project 1, Grad. Intro to OS   						
 **Luke Pratt** - 02/03/2023
 
 **Overview** 
@@ -51,6 +51,8 @@ Part I of this project is creating a library to handle file transfer requests wi
 
 The flow is as such: 
 
+## User perspective
+
 gfclient user: 
 
  - Wants to download something from a running server
@@ -74,7 +76,7 @@ gfserver user:
  - Calls gfs_serve to start serving requests indefinitely 
 
 
-From the library's perspective: 
+## Library perspective
 
 The connection process for both client and server is done in a function that does as described in the warmup. 
 
