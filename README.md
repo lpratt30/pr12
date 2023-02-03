@@ -69,7 +69,7 @@ gfserver user:
  - Creates a gfs (get file server) structure provided by the library
  - Sets the port and maximum number of connections
  - Specifies a handler with optional argument. For example, the handler
-   may be a multi-threaded transfer implementation developed in part II
+   may be a multi-threaded transfer implementation from part II
 	 - The handler specifies the flow of the server's data transfer. It does not specific the data transfer. The purpose of the library is to abstract the connection and transfer details 
  - Calls gfs_serve to start serving requests indefinitely 
 
