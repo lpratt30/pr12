@@ -34,7 +34,7 @@ Another socket option used is SO_REUSEADDR. Normally, a connection to the same p
 
 
 
-![alt text](https://github.com/lpratt30/pr12/blob/main/yarrr.png?raw=true)
+![alt text](https://github.com/lpratt30/pr12/blob/main/yarrr.png)
 
 https://github.com/lpratt30/pr12/blob/main/yarrr.PNG
 
