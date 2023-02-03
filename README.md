@@ -117,11 +117,26 @@ get file client:
 
 
 
+## Testing & Debugging
+
+
+
+The primary means of testing was locally transferring a list of files between a gfclient user and a gfserver user. Debugging statements were placed liberally throughtout all functions and code with #define DEBUG 1 such that it could easily be quieted. Anywhere a function could error or some data manipulation could occur that would have change to result in error later, these statements existed. These statements were placed precisely enough to not overcrowd the terminal but liberally enough to function almost as if GDB. 
+
+One critical error was that the files contained the exact number of bytes after being transferred as they should, but the file corrupted. Buffers were confirmed to have no off-by-one errors or other. To narrow down the problem, a binary gfclient was downlaoded from the interops thread on Piazza (Matthew Borland) and tested against the server. The files did not corrupt, so the client was known to be the issue. 
+
+Strangely, the code functioned as it should when exactly the response size in bytes was recv() in one call, but no more no less. This didn't make sense because the parser for the response header was doing memory comparisons between the buffer and possible response header format, only up to the length of received bytes. Why would a byte-level parser function incorrectly when parsing from a buffer that was written to (with the correct buffer offset updated by the number of bytes received in prior calls) once, but not multiple times? The stranger thing yet is the files didn't always corrupt, they had about a 10% chance to not corrupt. 
+
+After using excessive print statements and going line by line with GDB, the issue turned out to involve the manner void* buffers were being written into. Because we can't know what type of data will be transmitted ahead of time, all the buffers used were void* buffer[BUFSIZE]. However, when the buffer was being passed into the parsing function, data that previously could be manually extracted and printed no longer fully existed. GETFILE GET would become GET. 
+
+The idea then was to avoid this funkiness and stop doing byte level comparisons and instead use string comparisons by casting to a char* buffer. However, after changing the signature to fit a char* buffer, the parser only worked inexplicably when receiving 1 bytes at a time, and would not work when receiving exact response size or greater. Somewhere between here and there the parses logic was jumbled. The parser was re-written to do byte level comparisons, using memcmp. It was then tested against recvs() of 1 bytes at a time, response_header bytes, and 8192 bytes. It was found to work in all cases. This parses (and corresponding 1 second socket timeout option) is robust as it can handle recvs() that have a lot of latency and randomness. 
 
 
 Further challenges of Part I involve error handling. What if the server disconnects while transferring data or its header? 
 What if the server never sends the data it said it would, but maintains the connection? Likewise problems exist 
-originating from the client. Additionally, any flavor of incorrectly formatted request/response header may exist.
+originating from the client. Any flavor of incorrectly formatted request/response header may exist.
+
+
 
 What good is a server or client that can only do one thing at once? Part II of this project takes that same interface, uses mutex to make it thread safe, and transforms into a multi-threaded application to handle multiple requests simultaneously. 
 
