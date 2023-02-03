@@ -121,7 +121,7 @@ get file client:
 
 
 
-The primary means of testing was locally transferring a list of files between a gfclient user and a gfserver user. Debugging statements were placed liberally throughtout all functions and code with #define DEBUG 1 such that it could easily be quieted. Anywhere a function could error or some data manipulation could occur that would have change to result in error later, these statements existed. These statements were placed precisely enough to not overcrowd the terminal but liberally enough to function almost as if GDB. 
+The primary means of testing was locally transferring a list of files between a gfclient user and a gfserver user. Debugging statements were placed liberally throughtout all functions and code with if(DEBUG) print(error); and #define DEBUG 1 such that it could easily be quieted. Anywhere a function could error or some data manipulation could occur that would have change to result in error later, these statements existed. These statements were placed precisely enough to not overcrowd the terminal but liberally enough to function almost as if GDB. 
 
 One critical error was that the files contained the exact number of bytes after being transferred as they should, but the file corrupted. Buffers were confirmed to have no off-by-one errors or other. To narrow down the problem, a binary gfclient was downlaoded from the interops thread on Piazza (Matthew Borland) and tested against the server. The files did not corrupt, so the client was known to be the issue. 
 
