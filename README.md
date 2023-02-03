@@ -70,7 +70,7 @@ gfserver user:
  - Sets the port and maximum number of connections
  - Specifies a handler with optional argument. For example, the handler
    may be a multi-threaded transfer implementation from part II
-	 - The handler specifies the flow of the server's data transfer. It does not specific the data transfer. The purpose of the library is to abstract the connection and transfer details 
+	 - The handler specifies the high-level flow of the server's data transfer. It does not do the data transfer
  - Calls gfs_serve to start serving requests indefinitely 
 
   gfs = gfserver_create();
