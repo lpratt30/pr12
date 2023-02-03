@@ -91,7 +91,7 @@ get file server:
  - Parses the request for header to determine if valid request 
  - If valid request, calls the user provided handler to go to the file path and transfer data across
 	 - Has functions gfs_send and gfs_send_header which are called by users handler. These transfer data as described in the warmup
- - If invalid request, send a response to the client telling them 
+	 - gfs_send_header sends an HTTP like header containing the status of the request and the file size in bytes if request status is OK
  - Shutdown() connection with client and cleanup memory 
  - Continue serving new requests 
 
@@ -108,8 +108,8 @@ get file client:
  - Extract file length if valid full response header
  - Point to the location in buffer the byte after the size of the response and calls the user write_func
  - Continues to recv() data until either the server stops ending data or all expected data is received 
- - If server stops early, sets status as GF_ERROR. Otherwise, sets status as GF_OK
- - returns 0 to gf user to indicate the work is succsesfully, otherwise returns negative integer
+ - If server stops early, sets status as GF_ERROR
+ - sets status to GF_OK and returns 0 to gf user to indicate the work is succsesfully, else returns negative integer and has otherwise approiately set GF status 
 
 
 
