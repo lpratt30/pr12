@@ -47,8 +47,7 @@ A final note is that two internet protocols are used, IPv4 and IPv6. IPv4 is the
 
 Part I of this project is creating a client and server to handle file transfer requests with an API similar to libcurl's "easy" interface. The file transfer request follow an HTTP-like protocol. 
 
-
-The main challenges of part I are creating the client-server connection while allowing it to be IPv4/IPv6 agnostic, parsing the request/response data at the byte level for exact responses which may require 1 or more recvs() and come in the same messages as body data, and properly handling the passing of user-defined functions and arguments which may or may not exist for a given user. It is a systems level problem requiring byte level control and uses C in an object-oriented manner through the use of opaque pointers and handlers. 
+The main challenges of part I are parsing the request/response data at the byte level for exact responses which may require 1 or more recvs() and come in the same messages as body data, and properly handling the passing of user-defined functions and arguments which may or may not be defined for a given user. It is a systems level problem requiring byte level control and uses C in an object-oriented manner through the use of opaque pointers and handlers. 
 
 Further challenges of Part I involve error handling. What if the server disconnects while transferring data or its header? 
 What if the server never sends the data it said it would, but maintains the connection? Likewise problems exist 
