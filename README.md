@@ -47,7 +47,47 @@ A final note is that two internet protocols are used, IPv4 and IPv6. IPv4 is the
 
 ## Part I
 
-Part I of this project is creating a library to handle file transfer requests with an API similar to libcurl's "easy" interface. The file transfer request follow an HTTP-like protocol. Namely, gfclient.c and gfserver.c are written to meet the requirements outlined by gfclient.h and gfserver.h specifications. 
+Part I of this project is creating a library to handle file transfer requests with an API similar to libcurl's "easy" interface. The file transfer request follow an HTTP-like protocol. Namely, gfclient.c and gfserver.c are written to meet the requirements outlined by gfclient.h and gfserver.h specifications.
+
+The flow is as such: 
+
+gfclient user: 
+
+ - Wants to download something from a running server
+ - Creates a gfr (get file request) structure provided by the library
+ - Sets the port, hostname, and file path desired for download
+ - Creates a write function specifying how they want to write data to
+   where and passes it to the gfr with set_writefunct
+ - Optionally creates a header argument to process header data received
+   by the client
+ - Calls gfc_perform to retrieve data from the server and write it as
+   they desired
+
+gfserver user:
+
+ - Wants to provide access to files for download
+ - Creates a gfs (get file server) structure provided by the library
+ - Sets the port and maximum number of connections
+ - Specifies a handler with optional argument. For example, the handler
+   may be a multi-threaded transfer implementation developed in part II
+	 - The handler specifies the flow of the server's data transfer. It does not specific the data transfer. The purpose of the library is to abstract the connection and transfer details 
+ - Calls gfs_serve to start serving requests indefinitely 
+
+  gfs = gfserver_create();
+
+  /*Setting options*/
+  gfserver_set_handler(&gfs, gfs_handler);
+  gfserver_set_port(&gfs, port);
+  gfserver_set_maxpending(&gfs, 35);
+
+  /* this implementation does not pass any extra state, so it uses NULL. */
+  /* this value could be non-NULL.  You might want to test that in your own */
+  /* code. */
+  gfserver_set_handlerarg(&gfs, NULL);
+
+  // Run forever
+  gfserver_serve(&gfs);
+
 
 Further challenges of Part I involve error handling. What if the server disconnects while transferring data or its header? 
 What if the server never sends the data it said it would, but maintains the connection? Likewise problems exist 
