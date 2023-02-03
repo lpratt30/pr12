@@ -73,11 +73,42 @@ gfserver user:
 	 - The handler specifies the high-level flow of the server's data transfer. It does not do the data transfer
  - Calls gfs_serve to start serving requests indefinitely 
 
+
+From the library's perspective: 
+
 The connection process for both client and server is done in a function that does as described in the warmup. 
 
- - For server it is gfs_boot: int gfs_boot_server(unsigned short portno, int max_npending) 
+ - For server it is gfs_boot: int gfs_boot_server(unsigned short portno, int max_npending);
 
- - For client it is gfs_connect: int gfc_connect_server(gfcrequest_t **gfr)
+ - For client it is gfs_connect: int gfc_connect_server(gfcrequest_t **gfr);
+
+get file server: 
+ - Creates a socket to listen for connections at a specified port 
+ - Receives a request for data transfer from a client 
+ - Creates a context data structure containing information specific to this request
+ - Parses the request for header to determine if valid request 
+ - If valid request, calls the user provided handler to go to the file path and transfer data across
+	 - Is called by the handler to send the header of its response to the client and transmit the data to client 
+ - If invalid request, send a response to the client telling them 
+ - Shutdown() connection with client and continue serving 
+
+
+get file client: 
+ - Receives a file path from a user desired for download 
+ - Checks for available connections on a specified port and host 
+ - Creates an HTTP like request header and sends it to the server 
+ - Waits to recv() the response header and data from the server
+ - Receives more or less data than the size of a response header 
+ - Parses the response to check status, if invalid response header, or if potentially valid partially received response header
+	 - If partially valid, continue to listen for some attempts and timeout limit for more data 
+	 - If confirmed invalid, set request status and exit 
+ - Extract file length if valid full response header
+ - Point to the location in buffer the byte after the size of the response and calls the user write_func
+ - Continues to recv() data until either the server stops ending data or all expected data is received 
+ - If server stops early, sets status as GF_ERROR. Otherwise, sets status as GF_OK
+ - returns 0 to gf user to indicate the work is succsesfully, otherwise returns negative integer
+
+
 
 The function returns the socket file descriptor (integer value) if the connection process is succsesful, or otherwise prints error statements and returns a negative value. Additionally it updates a field in the gfc or gfs structure. All connection details and memory management are contained within this function except for the socket.
 
