@@ -10,6 +10,7 @@ The goal of this project is to build a client and server to request and write da
 
 ## Warmups
 **Client-Server Connection** 
+
 The warmups for this project follow [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/html/). Any time a connection is required in this project, it follows Beej's guidance.  While the guide is followed closely, the juicy bits are amalgamated together. 
 
 The process to prepare a server for accepting connections is as follows:
