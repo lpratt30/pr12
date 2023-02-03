@@ -35,7 +35,7 @@ Another socket option used is SO_REUSEADDR. Normally, a connection to the same p
 
 A critical choice when working with sockets is how a closed connection may be handled. Normally, the server should never close the client's connection for them, as the server has no prior knowledge of the client's API or if the client has recv() all data. Here, the shutdown() function is called by the server. This function closes down only the server's connection to the socket and allows for any remaining data to be transmitted. 
 
-A final note is that two internet protocols are used, IPv4 and IPv6. IPv4 is the oldest and most commonly used while IPv6 was created with the idea that one day we may run out of IP addresses on v4. The issue is that IPv4 and IPv6 follow different data structures. However, code can be written to be agnostic to IP address type, particularly by specifying AF_UNSPEC when passing hints into getaddrinfo. 
+A final note is that two internet protocols are used, IPv4 and IPv6. IPv4 is the oldest and most commonly used while IPv6 was created with the idea that one day we may run out of IP addresses on v4. The issue is that IPv4 and IPv6 follow different data structures. However, as detailed by Beej, code can be written to be agnostic to IP address type, particularly by specifying AF_UNSPEC when passing hints into getaddrinfo. 
 
 
 
