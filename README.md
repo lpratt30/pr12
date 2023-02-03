@@ -82,6 +82,8 @@ The connection process for both client and server is done in a function that doe
 
  - For client it is gfs_connect: int gfc_connect_server(gfcrequest_t **gfr);
 
+The function returns the socket file descriptor (integer value) if the connection process is succsesful, or otherwise prints error statements and returns a negative value. Additionally it updates a field in the gfc or gfs structure. All connection details and memory management are contained within this function except for the socket.
+
 get file server: 
  - Creates a socket to listen for connections at a specified port 
  - Receives a request for data transfer from a client 
@@ -112,7 +114,7 @@ get file client:
 
 
 
-The function returns the socket file descriptor (integer value) if the connection process is succsesful, or otherwise prints error statements and returns a negative value. Additionally it updates a field in the gfc or gfs structure. All connection details and memory management are contained within this function except for the socket.
+
 
 Further challenges of Part I involve error handling. What if the server disconnects while transferring data or its header? 
 What if the server never sends the data it said it would, but maintains the connection? Likewise problems exist 
