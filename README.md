@@ -134,7 +134,7 @@ The idea then was to avoid this funkiness and stop doing byte level comparisons 
 
 Further challenges of Part I involve error handling. What if the server disconnects while transferring data or its header? 
 What if the server never sends the data it said it would, but maintains the connection? Likewise problems exist 
-originating from the client. Any flavor of incorrectly formatted request/response header may exist.
+originating from the client. To resolve these, 
 
 
 
