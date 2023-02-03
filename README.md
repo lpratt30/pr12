@@ -89,8 +89,10 @@ get file server:
  - Parses the request for header to determine if valid request 
  - If valid request, calls the user provided handler to go to the file path and transfer data across
 	 - Is called by the handler to send the header of its response to the client and transmit the data to client 
+	 - Has functions gfs_send and gfs_send_header which are called by users handler
  - If invalid request, send a response to the client telling them 
- - Shutdown() connection with client and continue serving 
+ - Shutdown() connection with client and cleanup memory 
+ - Continue serving new requests 
 
 
 get file client: 
