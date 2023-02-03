@@ -29,7 +29,7 @@ The process for a client to connect to a running server is as follows:
   
 The purpose of a socket is to act as an interface for communication, such as send()ing and recv()ing data. send() and recv() are both calls that allow you to specify the amount of data you would like sent or received across a socket interface, but neither makes any guarantees that much data will send or receive. The only guarantee made is that the data will arrive in order if TCP is specified on the socket. Therefore, anytime these are used they need a while(bytes_done < bytes_needed) loop. 
 
-Once a socket is created, the client may then connect to it and send() or recv() data. However, these are both blocking, so if something goes wrong or malicious, the client/server can get hung. SO_SNDTIMEO and SO_RCVTIMEO socket options may be set to timeout the socket after x seconds or microseconds of blocking send and recv calls. Here, 1 second is arbitrarily used. Additionally, in critical areas, a limit to the number of allowed fail sends/recvs is used. 
+Once a socket is created, the client may then connect to it and send() or recv() data. However, these are both blocking, so if something goes wrong or malicious, the client/server can get hung. SO_SNDTIMEO and SO_RCVTIMEO socket options may be set to timeout the socket after x seconds or microseconds of unresponded send and recv calls. Here, 1 second is arbitrarily used. Additionally, in critical areas, a limit to the number of allowed fail sends/recvs is used. 
 
 Another socket option used is SO_REUSEADDR. Normally, a connection to the same port will be blocked for some time to ensure there is no more transmission happening. Using this option allows instant reuse of an address- great for testing.  
 
