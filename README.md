@@ -95,6 +95,7 @@ get file server:
  - If valid request, calls the user provided handler to go to the file path and transfer data across
 	 - Has functions gfs_send and gfs_send_header which are called by users handler. These transfer data as described in the warmup
 	 - gfs_send_header sends an HTTP like header containing the status of the request and the file size in bytes if request status is OK
+ - If invalid request, respond with GF INVALID
  - Shutdown() connection with client and cleanup memory 
  - Continue serving new requests 
 
