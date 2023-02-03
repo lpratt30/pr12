@@ -73,22 +73,6 @@ gfserver user:
 	 - The handler specifies the high-level flow of the server's data transfer. It does not do the data transfer
  - Calls gfs_serve to start serving requests indefinitely 
 
-  gfs = gfserver_create();
-
-  /*Setting options*/
-  gfserver_set_handler(&gfs, gfs_handler);
-  gfserver_set_port(&gfs, port);
-  gfserver_set_maxpending(&gfs, 35);
-
-  /* this implementation does not pass any extra state, so it uses NULL. */
-  /* this value could be non-NULL.  You might want to test that in your own */
-  /* code. */
-  gfserver_set_handlerarg(&gfs, NULL);
-
-  // Run forever
-  gfserver_serve(&gfs);
-
-
 Further challenges of Part I involve error handling. What if the server disconnects while transferring data or its header? 
 What if the server never sends the data it said it would, but maintains the connection? Likewise problems exist 
 originating from the client. Additionally, any flavor of incorrectly formatted request/response header may exist.
