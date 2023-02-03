@@ -73,6 +73,14 @@ gfserver user:
 	 - The handler specifies the high-level flow of the server's data transfer. It does not do the data transfer
  - Calls gfs_serve to start serving requests indefinitely 
 
+The connection process for both client and server is done in a function that does as described in the warmup. 
+
+ - For server it is gfs_boot: int gfs_boot_server(unsigned short portno, int max_npending) 
+
+ - For client it is gfs_connect: int gfc_connect_server(gfcrequest_t **gfr)
+
+The function returns the socket file descriptor (integer value) if the connection process is succsesful, or otherwise prints error statements and returns a negative value. Additionally it updates a field in the gfc or gfs structure. All connection details and memory management are contained within this function except for the socket.
+
 Further challenges of Part I involve error handling. What if the server disconnects while transferring data or its header? 
 What if the server never sends the data it said it would, but maintains the connection? Likewise problems exist 
 originating from the client. Additionally, any flavor of incorrectly formatted request/response header may exist.
