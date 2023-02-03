@@ -33,6 +33,8 @@ Once a socket is created, the client may then connect to it and send() or recv()
 
 Another socket option used is SO_REUSEADDR. Normally, a connection to the same port will be blocked for some time to ensure there is no more transmission happening. Using this option allows instant reuse of an address- great for testing.  
 
+A critical choice when working with sockets is how a closed connection may be handled. Normally, the server should never close the client's connection for them, as the server has no prior knowledge of the client's API or if the client has recv() all data. Here, the shutdown() function is called by the server. This function closes down only the server's connection to the socket and allows for any remaining data to be transmitted. 
+
 
 
 ![alt text](https://github.com/lpratt30/pr12/blob/main/yarrr.PNG)
