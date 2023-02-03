@@ -82,7 +82,7 @@ The connection process for both client and server is done in a function that doe
 
  - For client it is gfs_connect: int gfc_connect_server(gfcrequest_t **gfr);
 
-The function returns the socket file descriptor (integer value) if the connection process is succsesful, or otherwise prints error statements and returns a negative value. Additionally it updates a field in the gfc or gfs structure. All connection details and memory management are contained within this function except for the socket.
+The function returns the socket file descriptor (integer value) if the connection process is succsesful, or otherwise prints error statements and returns a negative value. Additionally it updates a field in the gfc or gfs structure with the socket file descriptor. All connection initialization and memory management are contained within this function. 
 
 get file server: 
  - Creates a socket to listen for connections at a specified port 
