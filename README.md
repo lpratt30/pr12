@@ -136,9 +136,12 @@ Further challenges of Part I involve error handling. What if the server disconne
 What if the server never sends the data it said it would, but maintains the connection? Likewise problems exist 
 originating from the client. To resolve these, 
 
+## Part II
 
+What good is a server or client that can only do one thing at once? Part II of this project takes that same interface, uses POSIX and boss-worker with poison pill exit, to make it thread safe, and transforms into a multi-threaded application to handle multiple requests simultaneously. 
 
-What good is a server or client that can only do one thing at once? Part II of this project takes that same interface, uses mutex to make it thread safe, and transforms into a multi-threaded application to handle multiple requests simultaneously. 
+Part II was greatly assisted by this [diagram](https://docs.google.com/drawings/d/1a2LPUBv9a3GvrrGzoDu2EY4779-tJzMJ7Sz2ArcxWFU/edit) which is provided in the assignment specification. It details the flow of the API. Additionally, questions asked and answered by discussions in Slack, particularly answered by TAs Tho and Ioan, were a great resource for Part II.
+
 
 
 Your README file is your opportunity to demonstrate to us that you understand the project.  Ideally, this
