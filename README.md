@@ -135,9 +135,11 @@ The idea then was to avoid this funkiness and stop doing byte level comparisons 
 
 What good is a server or client that can only do one thing at once? Part II of this project takes that same interface, uses POSIX and boss-worker with poison pill exit, to make it thread safe, and transforms into a multi-threaded application to handle multiple requests simultaneously. 
 
-Part II was greatly assisted by this [diagram](https://docs.google.com/drawings/d/1a2LPUBv9a3GvrrGzoDu2EY4779-tJzMJ7Sz2ArcxWFU/edit) which is provided in the assignment specification. It details the flow of the API. Additionally, questions asked and answered by discussions in Slack, particularly answered by TAs Tho and Ioan, were a great resource for Part II. This [guide](https://www.cs.cmu.edu/afs/cs/academic/class/15492-f07/www/pthreads.html) (Ippolito, Greg) was used as a refernce on how to use the thread library. 
+Part II was greatly assisted by this [diagram](https://docs.google.com/drawings/d/1a2LPUBv9a3GvrrGzoDu2EY4779-tJzMJ7Sz2ArcxWFU/edit) which is provided in the assignment specification. It details the flow of the API. Additionally, questions asked and answered by discussions in Slack, particularly answered by TAs Tho and Ioan, were a great resource for Part II. This [guide](https://www.cs.cmu.edu/afs/cs/academic/class/15492-f07/www/pthreads.html) (Ippolito, Greg) was used as a reference on how to use the thread librar and this [tutorial](https://nachtimwald.com/2019/04/12/thread-pool-in-c/) showed how a threadpool may be created and gave good information on the topic. 
 
 
+
+https://stackoverflow.com/questions/16806998/is-fopen-a-thread-safe-function-in-linux // https://piazza.com/class/lco3fd6h1yo48k/post/417
 
 Your README file is your opportunity to demonstrate to us that you understand the project.  Ideally, this
 should be a guide that someone not familiar with the project could pick up and read and understand
