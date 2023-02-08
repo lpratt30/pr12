@@ -133,9 +133,16 @@ The idea then was to avoid this funkiness and stop doing byte level comparisons 
 
 ## Part II
 
-What good is a server or client that can only do one thing at once? Part II of this project takes that same interface, uses POSIX and boss-worker with poison pill exit, to make it thread safe, and transforms into a multi-threaded application to handle multiple requests simultaneously. 
+Part II of this project takes the same interface, uses POSIX and boss-worker with conditional signaling, and transforms into a multi-threaded application to handle multiple requests simultaneously. 
 
-Part II was greatly assisted by this [diagram](https://docs.google.com/drawings/d/1a2LPUBv9a3GvrrGzoDu2EY4779-tJzMJ7Sz2ArcxWFU/edit) which is provided in the assignment specification. It details the flow of the API. Additionally, questions asked and answered by discussions in Slack, particularly answered by TAs Tho and Ioan, were a great resource for Part II. This [guide](https://www.cs.cmu.edu/afs/cs/academic/class/15492-f07/www/pthreads.html) (Ippolito, Greg) was used as a reference on how to use the thread librar and this [tutorial](https://nachtimwald.com/2019/04/12/thread-pool-in-c/) showed how a threadpool may be created and gave good information on the topic. 
+The gfserver and gfclient both have the boss set to a higher priority than the workers using this stack overflow [post](https://stackoverflow.com/questions/27558768/setting-a-thread-priority-to-high-c) as a reference. This is so that boss has highest priority to add new requests into the que such that performance isn't bottlenecked by the boss fighting for que mutex from workers trying to receive work orders. 
+
+All workers wait on a conditional variable that is the number of work orders to be done to be positive. The serve runs indefinitely. For the client to end processing, the number of items is set to be negative to process. This less lines of code (I.e cleaner more maintainable code) and slightly more computationally efficient to process than using the poision-pill method. 
+
+Part II was greatly assisted by this [diagram](https://docs.google.com/drawings/d/1a2LPUBv9a3GvrrGzoDu2EY4779-tJzMJ7Sz2ArcxWFU/edit) which is provided in the assignment specification. It details the flow of the API. Lecture P2L3 served as a guide for thread creation and conditional/mutex handling. Additionally, questions asked and answered by discussions in Piazza and Slack, particularly answered by TAs Tho and Ioan, were a great resource for understanding Part II.
+
+
+
 
 
 
