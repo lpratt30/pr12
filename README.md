@@ -80,8 +80,6 @@ get file client:
  - If server stops early, sets status as GF_ERROR
  - sets status to GF_OK and returns 0 to gf user to indicate the work is succsesfully, else returns negative integer and has otherwise approiately set GF status 
 
-
-
 ## Testing & Debugging Part I
 
 One critical error was that the files contained the exact number of bytes after being transferred as they should, but the file corrupted. The command cmp file1 file2 showed that the files were off at the very first bytes. To visualize, a .txt file was sent, and shown to be corrupted by ~90 bytes. The corruption wasn't continuous, some invalid characters existed in the middle of the file. Buffers were confirmed to have no off-by-one errors or other. A binary gfclient and gfserver was downloaded from the interops thread on Piazza (Matthew Borland) and tested against these implementations. The files did not corrupt for binary gfserver, so the client was known to be the issue. 
