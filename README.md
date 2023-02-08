@@ -137,7 +137,7 @@ Part II of this project takes the same interface, uses POSIX and boss-worker wit
 
 The gfserver and gfclient both have the boss set to a higher priority than the workers using this stack overflow [post](https://stackoverflow.com/questions/27558768/setting-a-thread-priority-to-high-c) as a reference. This is so that boss has highest priority to add new requests into the que such that performance isn't bottlenecked by the boss fighting for que mutex from workers trying to receive work orders. 
 
-All workers wait on a conditional variable that is the number of work orders to be done to be positive. The serve runs indefinitely. For the client to end processing, the number of items is set to be negative to process. This less lines of code (I.e cleaner more maintainable code) and slightly more computationally efficient to process than using the poision-pill method. 
+All workers wait on a conditional variable that is the number of work orders to be done to be positive. The serve runs indefinitely. For the client to end processing, the number of items is set to be negative to process. This results in less lines of code (I.e cleaner more maintainable code) and slightly more computationally efficient to process than using the poision-pill method. 
 
 Part II was greatly assisted by this [diagram](https://docs.google.com/drawings/d/1a2LPUBv9a3GvrrGzoDu2EY4779-tJzMJ7Sz2ArcxWFU/edit) which is provided in the assignment specification. It details the flow of the API. Lecture P2L3 served as a guide for thread creation and conditional/mutex handling. Additionally, questions asked and answered by discussions in Piazza and Slack, particularly answered by TAs Tho and Ioan, were a great resource for understanding Part II.
 
