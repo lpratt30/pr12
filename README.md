@@ -43,55 +43,20 @@ A final note is that two internet protocols are used, IPv4 and IPv6. IPv4 is the
 
 
 
-
-
-
 ## Part I
 
 Part I of this project is creating a library to handle file transfer requests with an API similar to libcurl's "easy" interface. The file transfer request follow an HTTP-like protocol. Namely, gfclient.c and gfserver.c are written to meet the requirements outlined by gfclient.h and gfserver.h specifications.
 
-The flow is as such: 
-
-## User perspective
-
-gfclient user: 
-
- - Wants to download something from a running server
- - Creates a gfr (get file request) structure provided by the library
- - Sets the port, hostname, and file path desired for download
- - Creates a write function specifying how they want to write data to
-   where and passes it to the gfr with set_writefunct
- - Optionally creates a header argument to process header data received
-   by the client
- - Calls gfc_perform to retrieve data from the server and write it as
-   they desired
-
-gfserver user:
-
- - Wants to provide access to files for download
- - Creates a gfs (get file server) structure provided by the library
- - Sets the port and maximum number of connections
- - Specifies a handler with optional argument. For example, the handler
-   may be a multi-threaded transfer implementation from part II
-	 - The handler specifies the high-level flow of the server's data transfer. It does not do the data transfer
- - Calls gfs_serve to start serving requests indefinitely 
-
 
 ## Library perspective
 
-The connection process for both client and server is done in a function that does as described in the warmup. 
-
- - For server it is gfs_boot: int gfs_boot_server(unsigned short portno, int max_npending);
-
- - For client it is gfs_connect: int gfc_connect_server(gfcrequest_t **gfr);
-
-The function returns the socket file descriptor (integer value) if the connection process is succsesful, or otherwise prints error statements and returns a negative value. Additionally it updates a field in the gfc or gfs structure with the socket file descriptor. All connection initialization and memory management are contained within this function. 
+The connection process for both client and server is done in a function that does as described in the warmup in a dedicated function that returns the socket descriptor. This kept the main working methods much shorter.  
 
 get file server: 
  - Creates a socket to listen for connections at a specified port 
- - Receives a request for data transfer from a client 
+ - Waits to receive a connection and subseqent request for data transfer from a client 
  - Creates a context data structure containing information specific to this request
- - the request for header to determine if valid request 
+ - Parses the request for header to determine if valid request 
  - If valid request, calls the user provided handler to go to the file path and transfer data across
 	 - Has functions gfs_send and gfs_send_header which are called by users handler. These transfer data as described in the warmup
 	 - gfs_send_header sends an HTTP like header containing the status of the request and the file size in bytes if request status is OK
@@ -119,17 +84,13 @@ get file client:
 
 ## Testing & Debugging Part I
 
+One critical error was that the files contained the exact number of bytes after being transferred as they should, but the file corrupted. The command cmp file1 file2 showed that the files were off at the very first bytes. To visualize, a .txt file was sent, and shown to be corrupted by ~90 bytes. The corruption wasn't continuous, some invalid characters existed in the middle of the file. Buffers were confirmed to have no off-by-one errors or other. A binary gfclient and gfserver was downloaded from the interops thread on Piazza (Matthew Borland) and tested against these implementations. The files did not corrupt for binary gfserver, so the client was known to be the issue. 
 
+The code functioned as it should when exactly the response size in bytes was recv() in one call, but no more no less. This didn't track because the parser for the response header was doing byte level memory comparisons between the buffer and possible response header format, only up to the length of received bytes. Why would a byte-level parser function incorrectly when parsing from a buffer that was written to (with the correct buffer offset updated by the number of bytes received in prior calls) once, but not multiple times? Or once, but with byte level comparisons only at the start of the buffer? The stranger thing yet is the files didn't always corrupt, they had about a 15% chance to not corrupt. This random chance of succsess pointed that it may be memory management between succsessive calls, but this was tested to not be the case by ensuring all buffers were zero'ed and all vars initalized for each request. The chars being passed into the parser was manually printed before being passed to show it was passing the expected scheme, format, and file size.
 
-The primary means of testing was locally transferring a list of files between a gfclient user and a gfserver user. Debugging statements were placed liberally throughtout all functions and code with if(DEBUG) print(error); and #define DEBUG 1 such that it could easily be quieted. Anywhere a function could error or some data manipulation could occur that would have change to result in error later, these statements existed. These statements were placed precisely enough to not overcrowd the terminal but liberally enough to function almost as if GDB. 
+After going line by line with GDB, the issue turned out to involve the manner void* buffers were being parsed from. Because we can't know what type of data will be transmitted ahead of time, all the buffers used were void* buffer[BUFSIZE]. However, when the buffer was being passed into the parsing function, it resulted in undefined behavior when doing memcmp of bytes in the buffer to possible header formats represented by strings (not including comparisons to null terminator). 
 
-One critical error was that the files contained the exact number of bytes after being transferred as they should, but the file corrupted. The command cmp file1 file2 showed that the files were off at the very first bytes. To try to visualize, a .txt file was created and sent, and shown to be corrupted by ~90 bytes. The corruption wasn't continuous, some invalid characters existed in the middle of the file. Buffers were confirmed to have no off-by-one errors or other. To narrow down the problem, a binary gfclient was downloaded from the interops thread on Piazza (Matthew Borland) and tested against the server. The files did not corrupt, so the client was known to be the issue. 
-
-Strangely, the code functioned as it should when exactly the response size in bytes was recv() in one call, but no more no less. This didn't make sense because the parser for the response header was doing memory comparisons between the buffer and possible response header format, only up to the length of received bytes. Why would a byte-level parser function incorrectly when parsing from a buffer that was written to (with the correct buffer offset updated by the number of bytes received in prior calls) once, but not multiple times? Or once, but with byte level comparisons only at the start of the buffer? The stranger thing yet is the files didn't always corrupt, they had about a 10% chance to not corrupt. This random chance of succsess pointed that it may be memory management between succsessive calls, but this was tested to not be the case by ensuring all buffers were zero'ed and all vars initalized for each request. The chars being passes into the parses was also manually printed before being passed to show it was passing the expected scheme, format, and file size.
-
-After using excessive print statements and going line by line with GDB, the issue turned out to involve the manner void* buffers were being written into. Because we can't know what type of data will be transmitted ahead of time, all the buffers used were void* buffer[BUFSIZE]. However, when the buffer was being passed into the parsing function, data that previously could be manually extracted and printed no longer fully existed. GETFILE GET would become GET. 
-
-The idea then was to avoid this funkiness and stop doing byte level comparisons and instead use string comparisons by casting to a char* buffer. However, after changing the signature to fit a char* buffer, the parser only worked when receiving 1 bytes at a time, and would not work when receiving exact response size or greater. Somewhere between here and there the parser logic was jumbled. The parser was re-written to do byte level comparisons, using memcmp. It was then tested against recvs() of 1 bytes at a time, response_header bytes, and 8192 bytes. It was found to work in all cases. This parser (and corresponding 1 second socket timeout option that allows n fail recv() attempts) is robust as it can handle recvs() that have a lot of latency and randomness. After having a robust connection system and response parse parser, server responses other than GF_OK were tested to check for correct assignment of GF_VALUE and return values which was relavitely trivial. 
+It was then tested against recvs() of 1 bytes at a time, response_header bytes, and 8192 bytes. It was found to work in all cases. This parser (and corresponding 1 second socket timeout option that allows n fail recv() attempts) is robust as it can handle recvs() that have a lot of latency and randomness. After having a robust connection system and response parse parser, server responses other than GF_OK were tested to check for correct assignment of GF_VALUE and return values which was relatively trivial. 
 
 ## Part II
 
@@ -139,18 +100,8 @@ The gfserver and gfclient both have the boss set to a higher priority than the w
 
 All workers wait on a conditional variable that is the number of work orders to be done to be positive. The serve runs indefinitely. For the client to end processing, the number of items is set to be negative to process. This results in less lines of code (I.e cleaner more maintainable code) and slightly more computationally efficient to process than using the poision-pill method. 
 
-Part II was greatly assisted by this [diagram](https://docs.google.com/drawings/d/1a2LPUBv9a3GvrrGzoDu2EY4779-tJzMJ7Sz2ArcxWFU/edit) which is provided in the assignment specification. It details the flow of the API. Lecture P2L3 served as a guide for thread creation and conditional/mutex handling. Additionally, questions asked and answered by discussions in Piazza and Slack, particularly answered by TAs Tho and Ioan, were a great resource for understanding Part II.
+Part II was greatly assisted by this [diagram](https://docs.google.com/drawings/d/1a2LPUBv9a3GvrrGzoDu2EY4779-tJzMJ7Sz2ArcxWFU/edit) which is provided in the assignment specification. It details the flow of the API. Lecture P2L3 served as a guide for thread creation and conditional/mutex handling. Additionally, questions asked and answered by discussions in Piazza and Slack by students and TAs, were a great resource for understanding Part II.
 
-
-
-
-
-
-https://stackoverflow.com/questions/16806998/is-fopen-a-thread-safe-function-in-linux // https://piazza.com/class/lco3fd6h1yo48k/post/417
-
-Your README file is your opportunity to demonstrate to us that you understand the project.  Ideally, this
-should be a guide that someone not familiar with the project could pick up and read and understand
-what you did, and why you did it.
 
 Specifically, we will evaluate your submission based upon:
 
