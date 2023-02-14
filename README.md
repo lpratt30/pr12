@@ -16,71 +16,24 @@ This project is written in C in Linux Ubuntu 20.04 using VisualStudios. Debuggin
 
 The warmups for this project follow [Beej's Guide to Network Programming](https://beej.us/guide/bgnet/html/). Any time a connection is required in this project, it follows Beej's guidance.  While the guide is followed closely, the juicy bits are amalgamated together. 
 
-The process to prepare a server for accepting connections is as follows:
- - specify a hostname, in this case NULL or "localhost" for a computer to check its own information
- - Initialize an addrinfo structure (hints) specifying terms of the connection, such as transmission type (TCP) and IP version
- - Initialize an addrinfo structure that holds information about the addresses you are trying to connect to
- - Call getaddrinfo(hostname, port_str, &hints,&servinfo); to modify servinfo into a linked list of available addreses
-  - Iterate through the list of addresses and create a connection socket for the first available address on the port 
-  -  listen() on that socket for up to n pending incoming connections. Then, while(1) forever to accept client connections and serve
+Critical bits are how to appropriately use the address structure and getaddrinfo calls to be IP version agnostic. 
 
-The process for a client to connect to a running server is as follows:
-
- - Specify the hostname (I.e www.google.com or "localhost" for your own computer) and port number in string format
- - Initialize the same addrinfo structures just as the server does and call getaddrinfo(hostname, port_str, &hints,&servinfo);
-  - Iterate through the list of addresses and create a connection socket for the first available address on the port 
-
-![alt text](https://github.com/lpratt30/pr12/blob/main/yarrr.PNG)
-  
-The purpose of a socket is to act as an interface for communication, such as send()ing and recv()ing data. send() and recv() are both calls that allow you to specify the amount of data you would like sent or received across a socket interface, but neither makes any guarantees that much data will send or receive. The only guarantee made is that the data will arrive in order if TCP is specified on the socket. Therefore, anytime these are used they need a while(bytes_done < bytes_needed) loop. 
-
-Once a socket is created, the client may then connect to it and send() or recv() data. However, these are both blocking, so if something goes wrong or malicious, the client/server can get hung. SO_SNDTIMEO and SO_RCVTIMEO socket options may be set to timeout the socket after x seconds or microseconds of unresponded send and recv calls. Here, 1 second is arbitrarily used. Additionally, in this project, a limit to the number of allowed fail sends/recvs is used. This was to allow for some level of robustness of design without risking losing too much performance to errored connections.
-
-Another socket option used is SO_REUSEADDR. Normally, a connection to the same port will be blocked for some time to ensure there is no more transmission happening. Using this option allows instant reuse of an address- great for testing.  
-
-A critical choice when working with sockets is how a closed connection may be handled. Normally, the server should never close the client's connection for them, as the server has no prior knowledge of the client's API or if the client has recv() all data. Here, the shutdown() function is called by the server. This function closes down only the server's connection to the socket and allows for any remaining data to be transmitted. The client knows the connection is over when it recvs a message containing 0 bytes. 
-
-A final note is that two internet protocols are used, IPv4 and IPv6. IPv4 is the oldest and most commonly used while IPv6 was created with the idea that one day we may run out of IP addresses on v4. The issue is that IPv4 and IPv6 follow different data structures. However, as detailed by Beej, code can be written to be agnostic to IP address type, particularly by specifying AF_UNSPEC when passing hints into getaddrinfo. 
-
-
+A key point in the warmups for the file transferthat sticks throughout the entire project is that no calls involving transfer of information by operating system guarantee any amount of data being transferred/received/written. They only guarentee the information arrives in order if using TCP. Every recv, send, read, write, all must be placed into a while(work_done < work_needed) throughtout the project. 
 
 
 ## Part I
 
 Part I of this project is creating a library to handle file transfer requests with an API similar to libcurl's "easy" interface. The file transfer request follow an HTTP-like protocol. Namely, gfclient.c and gfserver.c are written to meet the requirements outlined by gfclient.h and gfserver.h specifications.
 
+Every time a server receives a request or the client receives a response header, there are 3 possibilities. 
 
-## Library perspective
+A: A full, valid header has been received 
+B: A partial, but so-far valid header has been received 
+C: A full or partial invalid header has been received
 
-The connection process for both client and server is done in a function that does as described in the warmup in a dedicated function that returns the socket descriptor. This kept the main working methods much shorter.  
+No assumptions are made anyhwere about what sorts of data will arrive and when. There are many combinations of invalid headers, so heuristics like tokenization ended up making things more complicated and error prone. Additionally, the data isn't string data, so string functions may not be use. All header parsing is done with memory comparisons at the byte level, starting exhaustively from the start of the header buffer each time. 
 
-get file server: 
- - Creates a socket to listen for connections at a specified port 
- - Waits to receive a connection and subseqent request for data transfer from a client 
- - Creates a context data structure containing information specific to this request
- - Parses the request for header to determine if valid request 
- - If valid request, calls the user provided handler to go to the file path and transfer data across
-	 - Has functions gfs_send and gfs_send_header which are called by users handler. These transfer data as described in the warmup
-	 - gfs_send_header sends an HTTP like header containing the status of the request and the file size in bytes if request status is OK
- - If invalid request, respond with GF INVALID
- - Shutdown() connection with client and cleanup memory 
- - Continue serving new requests 
-
-
-get file client: 
- - Receives a file path from a user desired for download 
- - Checks for available connections on a specified port and host 
- - Creates an HTTP like request header and sends it to the server 
- - Waits to recv() the response header and data from the server
- - Receives more or less data than the size of a response header 
- - Parses the response to check status, if invalid response header, or if potentially valid partially received response header
-	 - If partially valid, continue to listen for some attempts and timeout limit for more data 
-	 - If confirmed invalid, set request status and exit 
- - Extract file length if valid full response header
- - Point to the location in buffer the byte after the size of the response and calls the user write_func
- - Continues to recv() data until either the server stops ending data or all expected data is received 
- - If server stops early, sets status as GF_ERROR
- - sets status to GF_OK and returns 0 to gf user to indicate the work is succsesfully, else returns negative integer and has otherwise approiately set GF status 
+To avoid hung as well as accomodate latency, the server and client both have socketoptions set that will time out after 1 second has passed. Then, they will also allow for up to n failed recvs/sends before taking the request to be failed and aborting. 
 
 ## Testing & Debugging Part I
 
@@ -96,34 +49,16 @@ It was then tested against recvs() of 1 bytes at a time, response_header bytes, 
 
 Part II of this project takes the same interface, uses POSIX and boss-worker with conditional signaling, and transforms into a multi-threaded application to handle multiple requests simultaneously. 
 
-The gfserver and gfclient both have the boss set to a higher priority than the workers using this stack overflow [post](https://stackoverflow.com/questions/27558768/setting-a-thread-priority-to-high-c) as a reference. This is so that boss has highest priority to add new requests into the que such that performance isn't bottlenecked by the boss fighting for que mutex from workers trying to receive work orders. 
+The server for Part II was the more involved of the 2. In the server, a boss-thread acts as a handler for the server, accepting requests from clients and placing them into a que. The boss is the server, while the workers execute the requests. Every time the boss placed a new request into the que, it also sent a signal, so one of the workers would know to check for a request. Because the server runs indefinitely, all threads were in a while loop with no exit conditions aside from fatal errors. The boss was joined to the main thread to keep the server's operation as blocking. 
 
-All workers wait on a conditional variable that is the number of work orders to be done to be positive. The serve runs indefinitely. For the client to end processing, the number of items is set to be negative to process. This results in less lines of code (I.e cleaner more maintainable code) and slightly more computationally efficient to process than using the poision-pill method. 
+The client for Part II also used boss-worker. This time, the main thread was the boss thread. The more pure form boss-worker implementation would have the boss queing up all requests, and then either controlling a flag or enquing a poison pill. However, creating and enquing the requests requires some amount of work, and in the interest of efficieny the boss should be doing as little as possible. Additionally, honoring this convention requires more code (I.e less readable, more error prone, and less maintainable). 
 
-Part II was greatly assisted by this [diagram](https://docs.google.com/drawings/d/1a2LPUBv9a3GvrrGzoDu2EY4779-tJzMJ7Sz2ArcxWFU/edit) which is provided in the assignment specification. It details the flow of the API. Lecture P2L3 served as a guide for thread creation and conditional/mutex handling. Additionally, questions asked and answered by discussions in Piazza and Slack by students and TAs, were a great resource for understanding Part II.
+A more efficient approach was to keep a global flag of the number of requests. The worker threads were created one-by-one and a signal was sent after each thread was created, such that the workers did not even need to wait for all of the workers to be created to start. Once the number of remaining requests received is 0, a worker signals to another worker, releases the lock, and exits, such that all workers will leave one-by-one. 
 
+The request process required a content_get call, and it wasn't clear if this was thread-safe or not. It was assumed to not be and was placed within locked operations by the workers, but performance could be improved if it is thread-safe and placing it after the lock. 
 
-Specifically, we will evaluate your submission based upon:
+## Testing & Debugging Part II
 
-- Your project design.  Pictures are particularly helpful here.
-- Your explanation of the trade-offs that you considered, the choices you made, and _why_ you made those choices.
-- A description of the flow of control within your submission. Pictures are helpful here.
-- How you implemented your code. This should be a high level description, not a rehash of your code.
-- How you _tested_ your code.  Remember, Bonnie isn't a test suite.  Tell us about the tests you developed.
-  Explain any tests you _used_ but did not develop.
-- References: this should be every bit of code that you used but did not write.  If you copy code from
-  one part of the project to another, we expect you to document it. If you _read_ anything that helped you
-  in your work, tell us what it was.  If you referred to someone else's code, you should tell us here.
-  Thus, this would include articles on Stack Overflow, any repositories you referenced on github.com, any
-  books you used, any manual pages you consulted.
+Testing was done locally with a multi-threaded file transfer. First, transfer was done with 1 single worker thread to test basic functionality. 
 
-
-In addition, you have an opportunity to earn extra credit.  To do so, we want to see something that
-adds value to the project.  Observing that there is a problem or issue _is not enough_.  We want
-something that is easily actioned.  Examples of this include:
-
-- Suggestions for additional tests, along with an explanation of _how_ you envision it being tested
-- Suggested revisions to the instructions, code, comments, etc.  It's not enough to say "I found
-  this confusing" - we want you to tell us what you would have said _instead_.
-
-While we do award extra credit, we do so sparingly.
+Testing and debugging for part II was mainly regarding issues of memory ownership across thread stacks and the convention of what information is declared or intialized and where. GDB and logging statements were used to track what information was being contained within pointers-to-pointers-of-structs as they were passed around.  Binaries from the interops Piazza post provided confidence in isolating functionality. 
