@@ -35,7 +35,7 @@ A: A full, valid header has been received
 B: A partial, but so-far valid header has been received                 
 C: A full or partial invalid header has been received                 
 
-No assumptions are made anyhwere about what sorts of data will arrive and when. There are many combinations of invalid headers, so heuristics like tokenization ended up making things more complicated and error prone. Additionally, the data isn't string data, so string functions may not be use. All header parsing is done with memory comparisons at the byte level, starting exhaustively from the start of the header buffer each time. The server does parse slightly differently as it only needs to find a header whereas the client needs to find a header and track the index of where the last byte of header data was in the buffer. 
+No assumptions are made anyhwere about what sorts of data will arrive and when. There are many combinations of invalid headers, so heuristics like tokenization ended up making things more complicated and error prone. Additionally, the data isn't string data, so string functions may not be used without explicitly placing a null terminator. All header parsing is done with memory comparisons at the byte level, starting exhaustively from the start of the header buffer each time. The server does parse slightly differently as it only needs to find a header whereas the client needs to find a header and track the index of where the last byte of header data was in the buffer. 
 
 To avoid hung as well as accomodate latency, the server and client both have socketoptions set that will time out after 1 second has passed. Then, they will also allow for up to n failed recvs/sends before taking the request to be failed and aborting. 
 
