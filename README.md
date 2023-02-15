@@ -54,7 +54,7 @@ It was then tested against recvs() of 1 bytes at a time, response_header bytes, 
 
 Part II of this project takes the same interface, uses POSIX and boss-worker with conditional signaling, and transforms into a multi-threaded application to handle multiple requests simultaneously. 
 
-The server for Part II was the more involved of the 2. In the server, a boss-thread acts as a handler for the server, accepting requests from clients and placing them into a que. The boss is the server, while the workers execute the requests. Every time the boss placed a new request into the que, it also sent a signal, so one of the workers would know to check for a request. Because the server runs indefinitely, all threads were in a while loop with no exit conditions aside from fatal errors. The boss was joined to the main thread to keep the server's operation as blocking. 
+The server for Part II was the more involved of the 2. In the server, a boss-thread acts the server, accepting requests from clients and placing them into a que. Then, the workers exectute the downloads. Every time the boss placed a new request into the que, it also sent a signal, so one of the workers would know to check for a request. Because the server runs indefinitely, all threads were in a while loop with no exit conditions aside from fatal errors. The boss was joined to the main thread to keep the server's operation as blocking. 
 
 It would've increased the design complexity, but the boss performance may have been improved by allowing the boss to only be the handler function, and having a dedicated worker for the server function. 
 
