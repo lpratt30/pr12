@@ -20,6 +20,10 @@ Critical bits are how to appropriately use the address structure and getaddrinfo
 
 A key point in the warmups for the file transferthat sticks throughout the entire project is that no calls involving transfer of information by operating system guarantee any amount of data being transferred/received/written. They only guarentee the information arrives in order if using TCP. Every recv, send, read, write, all must be placed into a while(work_done < work_needed) throughtout the project. 
 
+Shown below is the connection structure followed from Beej:
+
+![alt text](https://github.com/lpratt30/pr12/blob/main/yarrr.PNG)
+
 
 ## Part I
 
@@ -59,6 +63,8 @@ A more efficient approach was to keep a global flag of the number of requests. T
 The request process required a content_get call, and it wasn't clear if this was thread-safe or not. It was assumed to not be thread-safe and was placed within locked operations by the workers, but performance could be improved if it is thread-safe and placing it after the lock. 
 
 Shown below are the flows for the server and client, respectively:
+
+![alt text](https://github.com/lpratt30/pr12/blob/main/yarrrr2.PNG)
 
 
 
