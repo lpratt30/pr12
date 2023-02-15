@@ -18,7 +18,7 @@ The warmups for this project follow [Beej's Guide to Network Programming](https:
 
 Critical bits are how to appropriately use the address structure and getaddrinfo calls to be IP version agnostic. 
 
-A key point in the warmups for the file transferthat sticks throughout the entire project is that no calls involving transfer of information by operating system guarantee any amount of data being transferred/received/written. They only guarentee the information arrives in order if using TCP. Every recv, send, read, write, all must be placed into a while(work_done < work_needed) throughtout the project. 
+A key point is that no calls involving transfer of information by operating system guarantee any amount of data being transferred/received/written. They only guarentee the information arrives in order if using TCP. Every recv, send, read, write, all must be placed into a while(work_done < work_needed) throughtout the project. 
 
 Shown below is the connection structure followed from Beej:
 
