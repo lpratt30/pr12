@@ -31,9 +31,10 @@ A: A full, valid header has been received
 B: A partial, but so-far valid header has been received 
 C: A full or partial invalid header has been received
 
-No assumptions are made anyhwere about what sorts of data will arrive and when. There are many combinations of invalid headers, so heuristics like tokenization ended up making things more complicated and error prone. Additionally, the data isn't string data, so string functions may not be use. All header parsing is done with memory comparisons at the byte level, starting exhaustively from the start of the header buffer each time. 
+No assumptions are made anyhwere about what sorts of data will arrive and when. There are many combinations of invalid headers, so heuristics like tokenization ended up making things more complicated and error prone. Additionally, the data isn't string data, so string functions may not be use. All header parsing is done with memory comparisons at the byte level, starting exhaustively from the start of the header buffer each time. The server does parse slightly differently as it only needs to find a header whereas the client needs to find a header and track the index of where the last byte of header data was in the buffer. 
 
 To avoid hung as well as accomodate latency, the server and client both have socketoptions set that will time out after 1 second has passed. Then, they will also allow for up to n failed recvs/sends before taking the request to be failed and aborting. 
+
 
 ## Testing & Debugging Part I
 
@@ -51,11 +52,15 @@ Part II of this project takes the same interface, uses POSIX and boss-worker wit
 
 The server for Part II was the more involved of the 2. In the server, a boss-thread acts as a handler for the server, accepting requests from clients and placing them into a que. The boss is the server, while the workers execute the requests. Every time the boss placed a new request into the que, it also sent a signal, so one of the workers would know to check for a request. Because the server runs indefinitely, all threads were in a while loop with no exit conditions aside from fatal errors. The boss was joined to the main thread to keep the server's operation as blocking. 
 
-The client for Part II also used boss-worker. This time, the main thread was the boss thread. The more pure form boss-worker implementation would have the boss queing up all requests, and then either controlling a flag or enquing a poison pill. However, creating and enquing the requests requires some amount of work, and in the interest of efficieny the boss should be doing as little as possible. Additionally, honoring this convention requires more code (I.e less readable, more error prone, and less maintainable). 
+The client for Part II also used boss-worker. This time, the main thread was the boss thread. The more pure form boss-worker implementation would have the boss queing up all requests, and then either controlling a flag or enquing a poison pill. However, creating and enquing the requests requires some amount of work, and in the interest of efficieny the boss should be doing as little as possible. Additionally, honoring this convention requires more code (I.e less readable, more error prone, and less maintainable). Finally, the request que doesn't need to exist, the workers only need to know if they need to process a request or not, which can be done with a counter for number of requests remaining. 
 
-A more efficient approach was to keep a global flag of the number of requests. The worker threads were created one-by-one and a signal was sent after each thread was created, such that the workers did not even need to wait for all of the workers to be created to start. Once the number of remaining requests received is 0, a worker signals to another worker, releases the lock, and exits, such that all workers will leave one-by-one. 
+A more efficient approach was to keep a global flag of the number of requests. The worker threads were created one-by-one and a signal was sent after each thread was created, such that the workers did not even need to wait for all of the workers to be created to start. Once the number of remaining requests received is 0, a worker signals to another worker, releases the lock, and exits, such that all workers will leave one-by-one. Because all of the workers are initially woken on initialization, this process would in reality be more simultaneous. 
 
-The request process required a content_get call, and it wasn't clear if this was thread-safe or not. It was assumed to not be and was placed within locked operations by the workers, but performance could be improved if it is thread-safe and placing it after the lock. 
+The request process required a content_get call, and it wasn't clear if this was thread-safe or not. It was assumed to not be thread-safe and was placed within locked operations by the workers, but performance could be improved if it is thread-safe and placing it after the lock. 
+
+Shown below are the flows for the server and client, respectively:
+
+
 
 ## Testing & Debugging Part II
 
