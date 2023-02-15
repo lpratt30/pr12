@@ -31,9 +31,9 @@ Part I of this project is creating a library to handle file transfer requests wi
 
 Every time a server receives a request or the client receives a response header, there are 3 possibilities. 
 
-A: A full, valid header has been received 
-B: A partial, but so-far valid header has been received 
-C: A full or partial invalid header has been received
+A: A full, valid header has been received       
+B: A partial, but so-far valid header has been received                 
+C: A full or partial invalid header has been received                 
 
 No assumptions are made anyhwere about what sorts of data will arrive and when. There are many combinations of invalid headers, so heuristics like tokenization ended up making things more complicated and error prone. Additionally, the data isn't string data, so string functions may not be use. All header parsing is done with memory comparisons at the byte level, starting exhaustively from the start of the header buffer each time. The server does parse slightly differently as it only needs to find a header whereas the client needs to find a header and track the index of where the last byte of header data was in the buffer. 
 
